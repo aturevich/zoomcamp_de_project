@@ -1,0 +1,6 @@
+/gcp_creds/gcp-key.json
+.terrafrom*
+*/.terraform.lock.hcl
+*.tfstate
+*.tfstate.*
+.terraform/

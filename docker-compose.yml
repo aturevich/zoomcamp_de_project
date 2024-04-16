@@ -1,0 +1,116 @@
+version: '3'
+services:
+  redis:
+    image: 'redis:latest'
+    ports:
+      - "6379:6379"
+
+  airflow-webserver:
+    build:
+      context: .
+      dockerfile: ./dockerfiles/airflow/Dockerfile
+    image: apache/airflow:2.6.0
+    environment:
+      - AIRFLOW__CORE__EXECUTOR=LocalExecutor
+      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:airflow@postgres/airflow
+      - AIRFLOW__CORE__FERNET_KEY=IWfqn3VoaUQMTJ1M2RvfBlzcIx_q9tKgbfxYCOLMsbY=
+      - AIRFLOW__CORE__LOAD_EXAMPLES=False
+      - AIRFLOW__WEBSERVER__SECRET_KEY=super_secret_key
+      - AIRFLOW_CONN_REDIS_DEFAULT=redis://:@redis:6379/0
+      - AIRFLOW__CELERY__RESULT_BACKEND=db+postgresql://airflow:airflow@postgres/airflow
+      - AIRFLOW__CELERY__BROKER_URL=redis://:@redis:6379/0
+      - BUCKET_NAME=ships-data-bucket-1fcd
+      - GOOGLE_APPLICATION_CREDENTIALS=/opt/bitnami/config/gcp-key.json
+      - JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+      - redis
+    command: webserver
+    volumes:
+    - ./opt/airflow/dags:/opt/airflow/dags
+    - ./opt/airflow/logs:/opt/airflow/logs
+    - ./opt/airflow/plugins:/opt/airflow/plugins
+    - ./spark-jobs:/opt/bitnami/spark-jobs
+    - ./gcp_creds:/opt/bitnami/config
+
+  airflow-scheduler:
+    build:
+      context: .
+      dockerfile: ./dockerfiles/airflow/Dockerfile
+    image: apache/airflow:2.6.0
+    environment:
+      - AIRFLOW__CORE__EXECUTOR=LocalExecutor
+      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:airflow@postgres/airflow
+      - AIRFLOW__CORE__FERNET_KEY=IWfqn3VoaUQMTJ1M2RvfBlzcIx_q9tKgbfxYCOLMsbY=
+      - AIRFLOW__CORE__LOAD_EXAMPLES=False
+      - AIRFLOW_CONN_REDIS_DEFAULT=redis://:@redis:6379/0
+      - AIRFLOW__CELERY__RESULT_BACKEND=db+postgresql://airflow:airflow@postgres/airflow
+      - AIRFLOW__CELERY__BROKER_URL=redis://:@redis:6379/0
+      - BUCKET_NAME=ships-data-bucket-1fcd
+      - GOOGLE_APPLICATION_CREDENTIALS=/opt/bitnami/config/gcp-key.json
+    depends_on:
+      - postgres
+      - redis
+    command: scheduler
+    volumes:
+    - ./opt/airflow/dags:/opt/airflow/dags
+    - ./opt/airflow/logs:/opt/airflow/logs
+    - ./opt/airflow/plugins:/opt/airflow/plugins
+    - ./spark-jobs:/opt/bitnami/spark-jobs
+    - ./gcp_creds:/opt/bitnami/config
+
+  postgres:
+    image: postgres:13
+    environment:
+      - POSTGRES_USER=airflow
+      - POSTGRES_PASSWORD=airflow
+      - POSTGRES_DB=airflow
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-db-volume:/var/lib/postgresql/data
+
+  spark-master:
+    build:
+      context: .
+      dockerfile: ./dockerfiles/spark/Dockerfile
+    image: bitnami/spark:3.4.2
+    environment:
+      - SPARK_MODE=master
+      - SPARK_RPC_AUTHENTICATION_ENABLED=no
+      - SPARK_RPC_ENCRYPTION_ENABLED=no
+      - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
+      - SPARK_SSL_ENABLED=no
+      - BUCKET_NAME=ships-data-bucket-1fcd
+      - GOOGLE_APPLICATION_CREDENTIALS=/opt/bitnami/config/gcp-key.json
+      - JAVA_HOME=/opt/bitnami/java
+    ports:
+      - "8181:8080"
+      - "7077:7077"
+    volumes:
+      - ./spark-jobs:/opt/bitnami/spark-jobs
+      - ./gcp_creds:/opt/bitnami/config
+
+  spark-worker:
+    build:
+      context: .
+      dockerfile: ./dockerfiles/spark/Dockerfile
+    image: bitnami/spark:3.4.2
+    environment:
+      - SPARK_MODE=worker
+      - SPARK_MASTER_URL=spark://spark-master:7077
+      - SPARK_WORKER_MEMORY=1G
+      - SPARK_WORKER_CORES=1
+      - BUCKET_NAME=ships-data-bucket-1fcd
+      - GOOGLE_APPLICATION_CREDENTIALS=/opt/bitnami/config/gcp-key.json
+      - JAVA_HOME=/opt/bitnami/java
+    depends_on:
+      - spark-master
+    volumes:
+      - ./spark-jobs:/opt/bitnami/spark-jobs
+      - ./gcp_creds:/opt/bitnami/config
+
+volumes:
+  postgres-db-volume:
