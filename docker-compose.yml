@@ -19,7 +19,10 @@ services:
       - AIRFLOW_CONN_REDIS_DEFAULT=redis://:@redis:6379/0
       - AIRFLOW__CELERY__RESULT_BACKEND=db+postgresql://airflow:airflow@postgres/airflow
       - AIRFLOW__CELERY__BROKER_URL=redis://:@redis:6379/0
-      - BUCKET_NAME=ships-data-bucket-1fcd
+      - BUCKET_NAME=${DATA_BUCKET_NAME}
+      - BIGQUERY_DATASET=${BIGQUERY_DATASET_ID}
+      - PROJECT_ID=${PROJECT_ID}
+      - INTERMEDIATE_GCS_BUCKET=${SPARK_BUCKET_NAME}
       - GOOGLE_APPLICATION_CREDENTIALS=/opt/bitnami/config/gcp-key.json
       - JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
     ports:
@@ -48,7 +51,10 @@ services:
       - AIRFLOW_CONN_REDIS_DEFAULT=redis://:@redis:6379/0
       - AIRFLOW__CELERY__RESULT_BACKEND=db+postgresql://airflow:airflow@postgres/airflow
       - AIRFLOW__CELERY__BROKER_URL=redis://:@redis:6379/0
-      - BUCKET_NAME=ships-data-bucket-1fcd
+      - BUCKET_NAME=${DATA_BUCKET_NAME}
+      - BIGQUERY_DATASET=${BIGQUERY_DATASET_ID}
+      - PROJECT_ID=${PROJECT_ID}
+      - INTERMEDIATE_GCS_BUCKET=${SPARK_BUCKET_NAME}
       - GOOGLE_APPLICATION_CREDENTIALS=/opt/bitnami/config/gcp-key.json
     depends_on:
       - postgres
@@ -83,7 +89,10 @@ services:
       - SPARK_RPC_ENCRYPTION_ENABLED=no
       - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
       - SPARK_SSL_ENABLED=no
-      - BUCKET_NAME=ships-data-bucket-1fcd
+      - BUCKET_NAME=${DATA_BUCKET_NAME}
+      - BIGQUERY_DATASET=${BIGQUERY_DATASET_ID}
+      - PROJECT_ID=${PROJECT_ID}
+      - INTERMEDIATE_GCS_BUCKET=${SPARK_BUCKET_NAME}
       - GOOGLE_APPLICATION_CREDENTIALS=/opt/bitnami/config/gcp-key.json
       - JAVA_HOME=/opt/bitnami/java
     ports:
@@ -103,7 +112,10 @@ services:
       - SPARK_MASTER_URL=spark://spark-master:7077
       - SPARK_WORKER_MEMORY=1G
       - SPARK_WORKER_CORES=1
-      - BUCKET_NAME=ships-data-bucket-1fcd
+      - BUCKET_NAME=${DATA_BUCKET_NAME}
+      - BIGQUERY_DATASET=${BIGQUERY_DATASET_ID}
+      - PROJECT_ID=${PROJECT_ID}
+      - INTERMEDIATE_GCS_BUCKET=${SPARK_BUCKET_NAME}
       - GOOGLE_APPLICATION_CREDENTIALS=/opt/bitnami/config/gcp-key.json
       - JAVA_HOME=/opt/bitnami/java
     depends_on:

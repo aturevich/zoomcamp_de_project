@@ -1,5 +1,6 @@
 import sys
 import re
+import os
 from pyspark.sql.types import StructType, StructField, StringType, FloatType, IntegerType, TimestampType
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import col, to_timestamp
@@ -57,7 +58,7 @@ def main(input_path, output_table):
   
 
     # Specify the GCS bucket for intermediate storage
-    bucket = "intermediate-gcs-bucket"
+    bucket = os.getenv('INTERMEDIATE_GCS_BUCKET', 'default-intermediate-bucket')
     temporaryGcsBucket = f"gs://{bucket}"
 
     # Write to BigQuery

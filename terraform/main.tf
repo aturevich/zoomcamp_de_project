@@ -16,7 +16,7 @@ resource "random_id" "bucket_suffix" {
 
 resource "google_compute_instance" "vm_instance" {
   name         = "data-processing-vm"
-  machine_type = "e2-medium"
+  machine_type = "e2-standard-2"
   zone         = "${var.region}-a"
 
   boot_disk {

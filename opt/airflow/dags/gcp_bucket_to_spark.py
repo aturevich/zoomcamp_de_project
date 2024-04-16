@@ -4,7 +4,10 @@ from airflow import DAG
 from airflow.providers.google.cloud.sensors.gcs import GCSObjectsWithPrefixExistenceSensor
 from airflow.providers.apache.spark.operators.spark_submit import SparkSubmitOperator
 
+
 bucket_name = os.getenv('BUCKET_NAME', 'default-fallback-bucket')
+bigquery_dataset = os.getenv('BIGQUERY_DATASET', 'ships_ds') 
+project_id = os.getenv('PROJECT_ID') 
 
 default_args = {
     'owner': 'airflow',
@@ -36,12 +39,9 @@ submit_spark_job = SparkSubmitOperator(
     task_id='submit_spark_job',
     application='/opt/bitnami/spark-jobs/spark_job.py',
     conn_id='spark_default',
-    # total_executor_cores='1',
     executor_cores='1',
-    # executor_memory='2g',
-    # driver_memory='1g',
     jars='/opt/bitnami/spark/jars/gcs-connector-hadoop3-latest.jar,/opt/bitnami/spark/jars/spark-3.4-bigquery-0.37.0.jar',
-    application_args=['gs://ships-data-bucket-1fcd/small_test_data.csv', 'ships-data-eda:ships_ds.ships_table'],
+    application_args=[f'gs://{bucket_name}/small_test_data.csv', f'{project_id}:{bigquery_dataset}:ships_table'],
     conf={
         'spark.hadoop.fs.gs.impl': 'com.google.cloud.hadoop.fs.gcs.GoogleHadoopFileSystem',
         'spark.hadoop.fs.gs.auth.service.account.enable': 'true',
