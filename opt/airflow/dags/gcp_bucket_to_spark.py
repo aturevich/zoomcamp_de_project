@@ -41,7 +41,7 @@ submit_spark_job = SparkSubmitOperator(
     conn_id='spark_default',
     executor_cores='1',
     jars='/opt/bitnami/spark/jars/gcs-connector-hadoop3-latest.jar,/opt/bitnami/spark/jars/spark-3.4-bigquery-0.37.0.jar',
-    application_args=[f'gs://{bucket_name}/small_test_data.csv', f'{project_id}:{bigquery_dataset}:ships_table'],
+    application_args=[f'gs://{bucket_name}/small_test_data.csv', f'{project_id}.{bigquery_dataset}.ships_table'],
     conf={
         'spark.hadoop.fs.gs.impl': 'com.google.cloud.hadoop.fs.gcs.GoogleHadoopFileSystem',
         'spark.hadoop.fs.gs.auth.service.account.enable': 'true',

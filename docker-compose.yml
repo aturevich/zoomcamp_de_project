@@ -24,7 +24,6 @@ services:
       - PROJECT_ID=${PROJECT_ID}
       - INTERMEDIATE_GCS_BUCKET=${SPARK_BUCKET_NAME}
       - GOOGLE_APPLICATION_CREDENTIALS=/opt/bitnami/config/gcp-key.json
-      - JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
     ports:
       - "8080:8080"
     depends_on:
@@ -66,6 +65,7 @@ services:
     - ./opt/airflow/plugins:/opt/airflow/plugins
     - ./spark-jobs:/opt/bitnami/spark-jobs
     - ./gcp_creds:/opt/bitnami/config
+    - ./opt/spark/jars:/opt/bitnami/spark/jars/
 
   postgres:
     image: postgres:13
@@ -79,6 +79,7 @@ services:
       - postgres-db-volume:/var/lib/postgresql/data
 
   spark-master:
+    # user: root
     build:
       context: .
       dockerfile: ./dockerfiles/spark/Dockerfile
@@ -94,7 +95,7 @@ services:
       - PROJECT_ID=${PROJECT_ID}
       - INTERMEDIATE_GCS_BUCKET=${SPARK_BUCKET_NAME}
       - GOOGLE_APPLICATION_CREDENTIALS=/opt/bitnami/config/gcp-key.json
-      - JAVA_HOME=/opt/bitnami/java
+      - SPARK_HOME=/opt/bitnami/spark
     ports:
       - "8181:8080"
       - "7077:7077"
@@ -103,6 +104,7 @@ services:
       - ./gcp_creds:/opt/bitnami/config
 
   spark-worker:
+    # user: root
     build:
       context: .
       dockerfile: ./dockerfiles/spark/Dockerfile
@@ -117,7 +119,7 @@ services:
       - PROJECT_ID=${PROJECT_ID}
       - INTERMEDIATE_GCS_BUCKET=${SPARK_BUCKET_NAME}
       - GOOGLE_APPLICATION_CREDENTIALS=/opt/bitnami/config/gcp-key.json
-      - JAVA_HOME=/opt/bitnami/java
+      - SPARK_HOME=/opt/bitnami/spark
     depends_on:
       - spark-master
     volumes:
