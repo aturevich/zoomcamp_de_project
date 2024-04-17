@@ -5,3 +5,6 @@
 *.tfstate.*
 .terraform/
 opt/airflow/logs/scheduler/latest
+/notes.md
+/README_.md
+notes.md
